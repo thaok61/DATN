@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">bluetoothapp</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="scan">Scan</string>
+    <string name="control">Control</string>
+    <string name="history">History</string>
+    <string name="mic">MIC</string>
+    <string name="sound">SOUND</string>
+</resources>

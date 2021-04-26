@@ -1,0 +1,16 @@
+package com.thao.bluetoothapp.utils
+
+import java.util.*
+
+const val REQUEST_ENABLE_BT = 101
+const val REQUEST_ENABLE_DISCOVERABLE = 102
+
+const val ENABLE_BLUETOOTH = 1
+const val REQUEST_ENABLE_DISCOVERY = 2
+const val REQUEST_ACCESS_COARSE_LOCATION = 3
+const val REQUEST_ACCESS_FINE_LOCATION = 4
+
+const val PERMISSION_REQUEST_CODE = 100
+
+val BT_MODULE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+const val TAG = "THAOVD1"

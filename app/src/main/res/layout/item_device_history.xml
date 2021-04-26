@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="device"
+            type="android.bluetooth.BluetoothDevice" />
+    </data>
+
+    <LinearLayout
+        android:id="@+id/card_history"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:weightSum="3">
+
+        <TextView
+            android:id="@+id/name_device"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="@{device.name}"
+            android:textSize="24sp"
+            tools:text="JBL GO 3" />
+
+        <TextView
+            android:id="@+id/type_device"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="@{Integer.toString(device.type)}"
+            android:textSize="24sp"
+            tools:text="Speaker" />
+
+        <TextView
+            android:id="@+id/date_connection"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:text="OKE"
+            android:layout_weight="1"
+            android:textSize="24sp"
+            tools:text="11/04/2021" />
+
+    </LinearLayout>
+</layout>
