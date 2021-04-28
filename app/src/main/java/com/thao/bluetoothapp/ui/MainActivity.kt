@@ -21,25 +21,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        when {
-            ContextCompat.checkSelfPermission(
-                applicationContext,
-                Manifest.permission.RECORD_AUDIO
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                // You can use the API that requires the permission.
-                Toast.makeText(this, "GRANTED READ CONTACTS", Toast.LENGTH_SHORT).show()
-
-            }
-
-            else -> {
-                requestPermissions(
-                    arrayOf(Manifest.permission.RECORD_AUDIO),
-                    PERMISSION_REQUEST_CODE
-                )
-            }
-        }
-
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         val listHistoryDeviceFragment = ListHistoryDeviceFragment()
@@ -65,29 +46,5 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            PERMISSION_REQUEST_CODE -> {
-                // If request is cancelled, the result arrays are empty.
-                if ((grantResults.isNotEmpty() &&
-                            grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                ) {
-                    // Permission is granted. Continue the action or workflow
-                    // in your app.
-                    Toast.makeText(this, "Granted All", Toast.LENGTH_SHORT).show()
-                } else {
-                    requestPermissions(
-                        arrayOf(Manifest.permission.RECORD_AUDIO),
-                        PERMISSION_REQUEST_CODE
-                    )
-                }
-                return
-            }
-        }
-    }
+
 }

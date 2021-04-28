@@ -203,16 +203,7 @@ class ListScanDeviceFragment : Fragment(), ScanDeviceAdapter.OnItemClickListener
     }
 
     override fun onItemClick(device: BluetoothDevice) {
-        pairDevice(device)
-        connectUsingBluetoothA2dp(device)
-    }
-
-    private fun pairDevice(device: BluetoothDevice) {
-        try {
-            device.createBond()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        if (!device.createBond()) connectUsingBluetoothA2dp(device)
     }
 
     @SuppressLint("PrivateApi", "DiscouragedPrivateApi")
