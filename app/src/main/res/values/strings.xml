@@ -6,4 +6,8 @@
     <string name="history">History</string>
     <string name="mic">MIC</string>
     <string name="sound">SOUND</string>
+    <string name="on">ON</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="pref_speakerphone_key">speakerphone_preference</string>
+    <string name="pref_speakerphone_default">auto</string>
 </resources>

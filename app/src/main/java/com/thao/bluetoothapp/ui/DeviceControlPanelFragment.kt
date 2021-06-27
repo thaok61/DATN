@@ -4,30 +4,39 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.media.*
-import android.media.AudioAttributes.*
+import android.media.AudioAttributes.CONTENT_TYPE_SPEECH
+import android.media.AudioAttributes.USAGE_MEDIA
 import android.media.AudioFormat.*
+import android.media.audiofx.NoiseSuppressor
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import com.paramsen.noise.Noise
 import com.thao.bluetoothapp.databinding.FragmentDeviceControlPanelBinding
 import com.thao.bluetoothapp.utils.PERMISSION_REQUEST_CODE
 import com.thao.bluetoothapp.utils.TAG
+import com.thao.bluetoothapp.viewmodel.DeviceViewModel
+import kotlin.math.pow
 
 
 class DeviceControlPanelFragment : Fragment() {
 
     private lateinit var binding: FragmentDeviceControlPanelBinding
+    private val deviceViewModel: DeviceViewModel by activityViewModels()
 
     private var audioRecord: AudioRecord? = null
     private var audioTrack: AudioTrack? = null
 
     private var intBufferSize = 0
     private var shortAudioData: ShortArray? = null
+    private var shortDenoisedAudioData: FloatArray? = null
 
     private var intGain = 1
     private var isActive = true
@@ -49,7 +58,6 @@ class DeviceControlPanelFragment : Fragment() {
             ) -> {
                 // You can use the API that requires the permission.
                 Toast.makeText(requireContext(), "GRANTED RECORD AUDIO", Toast.LENGTH_SHORT).show()
-
             }
             else -> {
                 requestPermissions(
@@ -59,15 +67,14 @@ class DeviceControlPanelFragment : Fragment() {
             }
         }
 
-
         return binding.root
     }
 
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         binding.btnMic.setOnClickListener {
-            Log.d(TAG, "onViewCreated: CLICKED")
             if (binding.btnMic.text == "ON") {
                 thread = Thread {
                     threadLoop()
@@ -84,6 +91,19 @@ class DeviceControlPanelFragment : Fragment() {
                 Log.d(TAG, "onViewCreated: ${thread?.isAlive}")
             }
         }
+
+
+        deviceViewModel.isConnected.observe(viewLifecycleOwner, {
+            if (it == false) {
+                isActive = false
+                Log.d(TAG, "onViewCreated: ${thread?.state}")
+                binding.btnMic.text = "ON"
+                audioTrack?.stop()
+                audioRecord?.stop()
+                Log.d(TAG, "onViewCreated: ${thread?.isAlive}")
+            }
+        })
+
     }
 
     private fun threadLoop() {
@@ -93,9 +113,12 @@ class DeviceControlPanelFragment : Fragment() {
             intRecordSampleRate / 4,
             CHANNEL_IN_STEREO,
             ENCODING_PCM_16BIT
-        ) / 4
+        )
+        if (intBufferSize % 2 != 0) intBufferSize -= 1
 
         shortAudioData = ShortArray(size = intBufferSize)
+        shortDenoisedAudioData = FloatArray(size = intBufferSize)
+        val PSD = FloatArray(size = intBufferSize)
 
         audioRecord = AudioRecord(
             MediaRecorder.AudioSource.MIC,
@@ -104,6 +127,8 @@ class DeviceControlPanelFragment : Fragment() {
             ENCODING_PCM_16BIT,
             intBufferSize
         )
+        NoiseSuppressor.create(audioRecord!!.audioSessionId)
+        Log.d(TAG, "threadLoop: ${NoiseSuppressor.isAvailable()}")
 
 
         audioTrack = AudioTrack.Builder()
@@ -122,17 +147,57 @@ class DeviceControlPanelFragment : Fragment() {
         audioRecord!!.startRecording()
         audioTrack!!.play()
 
+        val noise = Noise.imaginary(intBufferSize * 2)
+
         while (isActive) {
             audioRecord?.read(shortAudioData!!, 0, shortAudioData!!.size)
 
-            for (i in shortAudioData!!.indices) {
-                shortAudioData!![i] =
-                    (shortAudioData!![i] * intGain).coerceAtMost(Short.MAX_VALUE.toInt()).toShort()
+            val floatShortAudio = FloatArray(intBufferSize * 2) {
+                0F
             }
 
-            audioTrack?.write(shortAudioData!!, 0, shortAudioData!!.size)
-        }
+            for (i in 0 until floatShortAudio.size / 2) {
+                floatShortAudio[i * 2] = shortAudioData!![i].toFloat()
+            }
+            val fft: FloatArray =
+                noise.fft(floatShortAudio, FloatArray(intBufferSize * 2))
 
+            for (i in 0 until fft.size / 2) {
+                val real = fft[i * 2]
+                val imaginary = fft[i * 2 + 1]
+                PSD[i] = real.pow(2) + imaginary.pow(2)
+
+                fft[i * 2 + 1] = -fft[i * 2 + 1]
+
+            }
+            val deFFT = noise.fft(fft, FloatArray(intBufferSize * 2))
+            for (i in 0 until deFFT.size / 2) {
+                shortDenoisedAudioData!![i] = (deFFT[i * 2] * 2 / (deFFT.size))
+//                if (PSD[i] < 1E8) {
+//                    shortDenoisedAudioData!![i] = 0F
+//                }
+            }
+
+            Log.d(
+                TAG,
+                "threadLoop: ${shortDenoisedAudioData!![0]} - ${shortAudioData!![0]} - ${PSD[0]}"
+            )
+//            audioTrack?.write(
+//                shortDenoisedAudioData!!,
+//                0,
+//                shortDenoisedAudioData!!.size,
+//                WRITE_NON_BLOCKING
+//            )
+            audioTrack?.write(shortMe(shortDenoisedAudioData!!), 0, shortDenoisedAudioData!!.size)
+        }
+    }
+
+    fun shortMe(floats: FloatArray): ShortArray {
+        val out = ShortArray(floats.size) // will drop last byte if odd number
+        for (i in out.indices) {
+            out[i] = floats[i].toInt().toShort()
+        }
+        return out
     }
 
     override fun onRequestPermissionsResult(
@@ -153,6 +218,7 @@ class DeviceControlPanelFragment : Fragment() {
 //                    thread = Thread { threadLoop() }
                 } else {
                     requestPermissions(
+                        requireActivity(),
                         arrayOf(Manifest.permission.RECORD_AUDIO),
                         PERMISSION_REQUEST_CODE
                     )

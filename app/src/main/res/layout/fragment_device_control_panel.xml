@@ -33,7 +33,7 @@
                     android:id="@+id/btn_mic"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="ON" />
+                    android:text="@string/on" />
             </LinearLayout>
 
             <LinearLayout
@@ -51,10 +51,14 @@
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="ON" />
+                    android:text="@string/on" />
             </LinearLayout>
+            <Button
+                android:layout_gravity="center"
+                android:id="@+id/btn_connect"
+                android:text="@string/disconnect"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
         </LinearLayout>
-
-
     </FrameLayout>
 </layout>

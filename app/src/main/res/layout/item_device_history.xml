@@ -34,15 +34,5 @@
             android:text="@{Integer.toString(device.type)}"
             android:textSize="24sp"
             tools:text="Speaker" />
-
-        <TextView
-            android:id="@+id/date_connection"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:text="OKE"
-            android:layout_weight="1"
-            android:textSize="24sp"
-            tools:text="11/04/2021" />
-
     </LinearLayout>
 </layout>

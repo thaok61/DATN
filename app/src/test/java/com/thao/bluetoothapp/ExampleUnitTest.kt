@@ -1,5 +1,6 @@
 package com.thao.bluetoothapp
 
+import com.paramsen.noise.Noise
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -12,6 +13,9 @@ import org.junit.Assert.*
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+        val floatArray = floatArrayOf(1f,2f,3f,4f,5f)
+        val noise = Noise.real(5)
+        val fft = noise.fft(floatArray,FloatArray(7))
+        println("FFT: $fft")
     }
 }

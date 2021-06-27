@@ -15,6 +15,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -23,20 +24,30 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.thao.bluetoothapp.IBluetoothA2dp
 import com.thao.bluetoothapp.adapter.ScanDeviceAdapter
 import com.thao.bluetoothapp.databinding.FragmentListScanDeviceBinding
-import com.thao.bluetoothapp.utils.BT_MODULE_UUID
-import com.thao.bluetoothapp.utils.ENABLE_BLUETOOTH
 import com.thao.bluetoothapp.utils.REQUEST_ACCESS_FINE_LOCATION
-import com.thao.bluetoothapp.utils.REQUEST_ENABLE_DISCOVERY
 import java.lang.reflect.Method
 
 
 class ListScanDeviceFragment : Fragment(), ScanDeviceAdapter.OnItemClickListener {
 
-    private var bluetoothHeadset: BluetoothHeadset? = null
+    private val launchRequestEnableBluetooth = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (it.resultCode == Activity.RESULT_OK) {
+            enableDiscovery()
+        }
+    }
+    private val launchRequestDiscovery = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (it.resultCode == Activity.RESULT_CANCELED) {
+            Toast.makeText(requireContext(), "Discovery cancelled", Toast.LENGTH_SHORT).show()
+        } else {
+            startDiscovery()
+        }
+    }
+
     private val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     private val deviceListAdapter = ScanDeviceAdapter()
     private var device: BluetoothDevice? = null
     private lateinit var binding: FragmentListScanDeviceBinding
+    
     private var b: IBinder? = null
     private lateinit var a2dp: BluetoothA2dp  //class to connect to an A2dp device
     private lateinit var ia2dp: IBluetoothA2dp
@@ -111,18 +122,21 @@ class ListScanDeviceFragment : Fragment(), ScanDeviceAdapter.OnItemClickListener
         if (bluetoothAdapter.isEnabled) {
             enableDiscovery()
         } else {
+
             // Bluetooth isn't enabled - prompt user to turn it on
             val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            startActivityForResult(intent, ENABLE_BLUETOOTH)
+            launchRequestEnableBluetooth.launch(intent)
         }
     }
 
     private fun enableDiscovery() {
+
         val intent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)
-        startActivityForResult(intent, REQUEST_ENABLE_DISCOVERY)
+        launchRequestDiscovery.launch(intent)
     }
 
     private fun registerBluetoothDevice() {
+
         requireActivity().registerReceiver(
             bluetoothDiscoveryResult,
             IntentFilter(BluetoothDevice.ACTION_FOUND)
@@ -136,7 +150,6 @@ class ListScanDeviceFragment : Fragment(), ScanDeviceAdapter.OnItemClickListener
             IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
         )
     }
-
 
     private fun startDiscovery() {
         if (ContextCompat.checkSelfPermission(
@@ -180,22 +193,6 @@ class ListScanDeviceFragment : Fragment(), ScanDeviceAdapter.OnItemClickListener
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        when (requestCode) {
-            ENABLE_BLUETOOTH -> if (resultCode == Activity.RESULT_OK) {
-                enableDiscovery()
-            }
-
-            REQUEST_ENABLE_DISCOVERY -> if (resultCode == Activity.RESULT_CANCELED) {
-                Toast.makeText(requireContext(), "Discovery cancelled", Toast.LENGTH_SHORT).show()
-            } else {
-                startDiscovery()
-            }
-        }
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         requireActivity().unregisterReceiver(bluetoothDiscoveryMonitor)
@@ -203,7 +200,8 @@ class ListScanDeviceFragment : Fragment(), ScanDeviceAdapter.OnItemClickListener
     }
 
     override fun onItemClick(device: BluetoothDevice) {
-        if (!device.createBond()) connectUsingBluetoothA2dp(device)
+        !device.createBond()
+        connectUsingBluetoothA2dp(device)
     }
 
     @SuppressLint("PrivateApi", "DiscouragedPrivateApi")
@@ -257,7 +255,7 @@ class ListScanDeviceFragment : Fragment(), ScanDeviceAdapter.OnItemClickListener
         }
     }
 
-    private fun disConnectUsingBluetoothA2dp(device: BluetoothDevice) {
+    fun disConnectUsingBluetoothA2dp(device: BluetoothDevice) {
         try {
             // For Android 4.2 Above Devices
             if (b == null) {

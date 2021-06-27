@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "795773056690",
+    "project_id": "finalproject-49f09",
+    "storage_bucket": "finalproject-49f09.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:795773056690:android:10ad72a544e23e94963bab",
+        "android_client_info": {
+          "package_name": "com.thao.bluetoothapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "795773056690-u3iin3slm4gcm6qc5em5gms2sqnld6ob.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSYG3jJGcP0de72tyLiea2skMg_NWxn1Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "795773056690-u3iin3slm4gcm6qc5em5gms2sqnld6ob.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

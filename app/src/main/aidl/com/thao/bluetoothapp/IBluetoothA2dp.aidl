@@ -5,7 +5,7 @@ interface IBluetoothA2dp {
      * System private API for Bluetooth A2DP service
      */
      boolean connectSink(in BluetoothDevice device); // Pre API 11 only
-       boolean disconnectSink(in BluetoothDevice device); // Pre API 11 only
+        boolean disconnectSink(in BluetoothDevice device); // Pre API 11 only
        boolean connect(in BluetoothDevice device); // API 11 and up only
        boolean disconnect(in BluetoothDevice device); // API 11 and up only
        boolean suspendSink(in BluetoothDevice device); // all
